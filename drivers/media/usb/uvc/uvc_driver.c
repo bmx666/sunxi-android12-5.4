@@ -2084,7 +2084,7 @@ static int uvc_register_terms(struct uvc_device *dev,
 		/* Register a metadata node, but ignore a possible failure,
 		 * complete registration of video nodes anyway.
 		 */
-		uvc_meta_register(stream);
+		//uvc_meta_register(stream);
 
 		term->vdev = &stream->vdev;
 	}

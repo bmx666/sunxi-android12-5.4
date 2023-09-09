@@ -835,6 +835,7 @@ static void local_cpu_stop(void)
 
 	local_daif_mask();
 	sdei_mask_local_cpu();
+	flush_cache_all();
 	cpu_park_loop();
 }
 

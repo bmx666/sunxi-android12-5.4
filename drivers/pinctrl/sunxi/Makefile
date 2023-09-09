@@ -1,8 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0
 # Core
-obj-y					+= pinctrl-sunxi.o
+obj-$(CONFIG_PINCTRL_SUNXI)		+= pinctrl-sunxi.o
 
 # SoC Drivers
+obj-$(CONFIG_PINCTRL_SUNXI_TEST)	+= pinctrl-sunxi-test.o
+obj-$(CONFIG_PINCTRL_SUN50IW9)		+= pinctrl-sun50iw9.o
+obj-$(CONFIG_PINCTRL_SUN50IW9_R)	+= pinctrl-sun50iw9-r.o
+obj-$(CONFIG_PINCTRL_SUN50IW10P1)	+= pinctrl-sun50iw10p1.o
+obj-$(CONFIG_PINCTRL_SUN50IW10P1_R)	+= pinctrl-sun50iw10p1-r.o
 obj-$(CONFIG_PINCTRL_SUNIV_F1C100S)	+= pinctrl-suniv-f1c100s.o
 obj-$(CONFIG_PINCTRL_SUN4I_A10)		+= pinctrl-sun4i-a10.o
 obj-$(CONFIG_PINCTRL_SUN5I)		+= pinctrl-sun5i.o

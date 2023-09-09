@@ -720,8 +720,21 @@ EXPORT_SYMBOL(phys_mem_access_prot);
 
 static void __init *early_alloc(unsigned long sz)
 {
-	void *ptr = memblock_alloc(sz, sz);
 
+	/*
+	 * When calling early_alloc, it was found that opening memblock_debug would result in data abort.
+	 * This is a solution that did not find the root cause.
+	 */
+	void *ptr;
+	int temp_memblock_debug = 0;
+	if (memblock_debug) {
+		temp_memblock_debug = memblock_debug;
+		memblock_debug = 0;
+	}
+	ptr = memblock_alloc(sz, sz);
+	if (temp_memblock_debug) {
+		memblock_debug = temp_memblock_debug;
+	}
 	if (!ptr)
 		panic("%s: Failed to allocate %lu bytes align=0x%lx\n",
 		      __func__, sz, sz);

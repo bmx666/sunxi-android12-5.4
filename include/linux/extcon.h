@@ -77,6 +77,12 @@
 #define EXTCON_DISP_DP		44	/* Display Port */
 #define EXTCON_DISP_HMD		45	/* Head-Mounted Display */
 
+#ifdef CONFIG_SUNXI_EXTCON
+#define EXTCON_DISP_CVBS	46
+#define EXTCON_DISP_TVD		47
+#define EXTCON_DISP_EDP		48
+#endif
+
 /* Miscellaneous external connector */
 #define EXTCON_DOCK		60
 #define EXTCON_JIG		61

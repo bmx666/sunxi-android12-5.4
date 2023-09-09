@@ -1315,4 +1315,8 @@ config TOUCHSCREEN_IQS5XX
 	  To compile this driver as a module, choose M here: the
 	  module will be called iqs5xx.
 
+source "drivers/input/touchscreen/gslx680new/Kconfig"
+source "drivers/input/touchscreen/cyttsp5/Kconfig"
+source "drivers/input/touchscreen/wacom_pen/Kconfig"
+source "drivers/input/touchscreen/gt9xxnew/Kconfig"
 endif

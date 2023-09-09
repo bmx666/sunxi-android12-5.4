@@ -339,6 +339,12 @@ int ion_free(struct ion_buffer *buffer);
  */
 
 size_t ion_query_heaps_kernel(struct ion_heap_data *hdata, size_t size);
+
+/**
+ * ion_get_total_heap_bytes - Returns information about ion total memory used.
+ *
+ */
+u64 ion_get_total_heap_bytes(void);
 #else
 
 static inline int __ion_device_add_heap(struct ion_heap *heap,

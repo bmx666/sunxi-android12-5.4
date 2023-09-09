@@ -180,8 +180,6 @@ EXPORT_SYMBOL(qcom_scm_hdcp_req);
  */
 bool qcom_scm_pas_supported(u32 peripheral)
 {
-	int ret;
-
 	if (!__qcom_scm_is_call_available(__scm->dev, QCOM_SCM_SVC_PIL,
 					  QCOM_SCM_PAS_IS_SUPPORTED_CMD))
 		return false;

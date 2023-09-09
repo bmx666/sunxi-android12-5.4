@@ -167,7 +167,23 @@ static const struct __extcon_info {
 		.id = EXTCON_DISP_HMD,
 		.name = "HMD",
 	},
-
+#ifdef CONFIG_SUNXI_EXTCON
+	[EXTCON_DISP_CVBS] = {
+		.type = EXTCON_TYPE_DISP,
+		.id = EXTCON_DISP_CVBS,
+		.name = "CVBS",
+	},
+	[EXTCON_DISP_TVD] = {
+		.type = EXTCON_TYPE_DISP,
+		.id = EXTCON_DISP_TVD,
+		.name = "TVD",
+	},
+	[EXTCON_DISP_EDP] = {
+		.type = EXTCON_TYPE_DISP,
+		.id = EXTCON_DISP_EDP,
+		.name = "EDP",
+	},
+#endif
 	/* Miscellaneous external connector */
 	[EXTCON_DOCK] = {
 		.type = EXTCON_TYPE_MISC,

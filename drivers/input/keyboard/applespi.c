@@ -48,7 +48,6 @@
 #include <linux/efi.h>
 #include <linux/input.h>
 #include <linux/input/mt.h>
-#include <linux/ktime.h>
 #include <linux/leds.h>
 #include <linux/module.h>
 #include <linux/spinlock.h>
@@ -401,7 +400,7 @@ struct applespi_data {
 	unsigned int			cmd_msg_cntr;
 	/* lock to protect the above parameters and flags below */
 	spinlock_t			cmd_msg_lock;
-	ktime_t				cmd_msg_queued;
+	bool				cmd_msg_queued;
 	enum applespi_evt_type		cmd_evt_type;
 
 	struct led_classdev		backlight_info;
@@ -717,7 +716,7 @@ static void applespi_msg_complete(struct applespi_data *applespi,
 		wake_up_all(&applespi->drain_complete);
 
 	if (is_write_msg) {
-		applespi->cmd_msg_queued = 0;
+		applespi->cmd_msg_queued = false;
 		applespi_send_cmd_msg(applespi);
 	}
 
@@ -759,16 +758,8 @@ static int applespi_send_cmd_msg(struct applespi_data *applespi)
 		return 0;
 
 	/* check whether send is in progress */
-	if (applespi->cmd_msg_queued) {
-		if (ktime_ms_delta(ktime_get(), applespi->cmd_msg_queued) < 1000)
-			return 0;
-
-		dev_warn(&applespi->spi->dev, "Command %d timed out\n",
-			 applespi->cmd_evt_type);
-
-		applespi->cmd_msg_queued = 0;
-		applespi->write_active = false;
-	}
+	if (applespi->cmd_msg_queued)
+		return 0;
 
 	/* set up packet */
 	memset(packet, 0, APPLESPI_PACKET_SIZE);
@@ -865,7 +856,7 @@ static int applespi_send_cmd_msg(struct applespi_data *applespi)
 		return sts;
 	}
 
-	applespi->cmd_msg_queued = ktime_get_coarse();
+	applespi->cmd_msg_queued = true;
 	applespi->write_active = true;
 
 	return 0;
@@ -970,7 +961,7 @@ static int applespi_tp_dim_open(struct inode *inode, struct file *file)
 	file->private_data = applespi;
 
 	snprintf(applespi->tp_dim_val, sizeof(applespi->tp_dim_val),
-		 "0x%.4x %dx%d+%u+%u\n",
+		 "0x%.4x %dx%d+%d+%d\n",
 		 applespi->touchpad_input_dev->id.product,
 		 applespi->tp_dim_min_x, applespi->tp_dim_min_y,
 		 applespi->tp_dim_max_x - applespi->tp_dim_min_x,
@@ -1246,7 +1237,7 @@ applespi_register_touchpad_device(struct applespi_data *applespi,
 	}
 	if (!touchpad_dimensions[0]) {
 		snprintf(touchpad_dimensions, sizeof(touchpad_dimensions),
-			 "%dx%d+%u+%u",
+			 "%dx%d+%d+%d",
 			 applespi->tp_info.x_min,
 			 applespi->tp_info.y_min,
 			 applespi->tp_info.x_max - applespi->tp_info.x_min,
@@ -1917,7 +1908,7 @@ static int __maybe_unused applespi_resume(struct device *dev)
 	applespi->drain = false;
 	applespi->have_cl_led_on = false;
 	applespi->have_bl_level = 0;
-	applespi->cmd_msg_queued = 0;
+	applespi->cmd_msg_queued = false;
 	applespi->read_active = false;
 	applespi->write_active = false;
 

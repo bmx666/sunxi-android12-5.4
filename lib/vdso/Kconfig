@@ -11,8 +11,6 @@ config GENERIC_GETTIMEOFDAY
 	  Each architecture that enables this feature has to
 	  provide the fallback implementation.
 
-if HAVE_GENERIC_VDSO
-
 config GENERIC_VDSO_32
 	bool
 	depends on GENERIC_GETTIMEOFDAY && !64BIT
@@ -24,5 +22,3 @@ config GENERIC_COMPAT_VDSO
 	bool
 	help
 	  This config option enables the compat VDSO layer.
-
-endif

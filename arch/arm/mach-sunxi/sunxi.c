@@ -15,9 +15,11 @@
 #include <linux/init.h>
 #include <linux/platform_device.h>
 #include <linux/reset/sunxi.h>
-
 #include <asm/mach/arch.h>
 #include <asm/secure_cntvoff.h>
+#include <asm/mach/map.h>
+
+#include "sunxi.h"
 
 static const char * const sunxi_board_dt_compat[] = {
 	"allwinner,sun4i-a10",
@@ -60,6 +62,20 @@ DT_MACHINE_START(SUN7I_DT, "Allwinner sun7i (A20) Family")
 	.dt_compat	= sun7i_board_dt_compat,
 MACHINE_END
 
+static struct map_desc sunxi_io_desc[] __initdata = {
+	{
+		.virtual = (unsigned long) UARTIO_ADDRESS(SUNXI_UART_PBASE),
+		.pfn     = __phys_to_pfn(SUNXI_UART_PBASE),
+		.length  = SUNXI_UART_SIZE,
+		.type    = MT_DEVICE,
+	},
+};
+
+void __init sunxi_map_io(void)
+{
+	iotable_init(sunxi_io_desc, ARRAY_SIZE(sunxi_io_desc));
+}
+
 static const char * const sun8i_board_dt_compat[] = {
 	"allwinner,sun8i-a23",
 	"allwinner,sun8i-a33",
@@ -68,11 +84,13 @@ static const char * const sun8i_board_dt_compat[] = {
 	"allwinner,sun8i-r40",
 	"allwinner,sun8i-v3",
 	"allwinner,sun8i-v3s",
+	"allwinner,sun50iw10p1",
 	NULL,
 };
 
 DT_MACHINE_START(SUN8I_DT, "Allwinner sun8i Family")
 	.init_time	= sun6i_timer_init,
+	.map_io		= sunxi_map_io,
 	.dt_compat	= sun8i_board_dt_compat,
 MACHINE_END
 

@@ -73,6 +73,8 @@
 
 #include <trace/events/sched.h>
 
+#include <trace/events/readahead.h>//jiangbin add for treadahead
+
 int suid_dumpable = 0;
 
 static LIST_HEAD(formats);
@@ -884,11 +886,21 @@ struct file *open_exec(const char *name)
 {
 	struct filename *filename = getname_kernel(name);
 	struct file *f = ERR_CAST(filename);
+	struct inode *inode = NULL;
 
 	if (!IS_ERR(filename)) {
 		f = do_open_execat(AT_FDCWD, filename, 0);
 		putname(filename);
 	}
+	/*AW_CODE;jiangbin;add trace for readahead*/
+	if (!IS_ERR(f)) {
+		inode = f->f_path.dentry->d_inode;
+		if (inode && inode->i_ino && MAJOR(inode->i_sb->s_dev)) {
+			trace_do_open_exec(inode);
+		}
+	}
+	/*end*/
+
 	return f;
 }
 EXPORT_SYMBOL(open_exec);

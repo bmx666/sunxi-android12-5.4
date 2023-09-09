@@ -252,6 +252,10 @@ config LED_TRIGGER_PHY
 
 comment "MII PHY device drivers"
 
+config SUNXI_EPHY
+	tristate "Drivers for Allwinnertech EPHY"
+	depends on MFD_ACX00
+
 config SFP
 	tristate "SFP cage support"
 	depends on I2C && PHYLINK
@@ -433,6 +437,11 @@ config MICROSEMI_PHY
 	tristate "Microsemi PHYs"
 	---help---
 	  Currently supports VSC8514, VSC8530, VSC8531, VSC8540 and VSC8541 PHYs
+
+config MOTORCOMM_PHY
+        tristate "Motorcomm PHYs"
+        help
+          Supports the YT8010, YT8510, YT8511, YT8512 PHYs.
 
 config NATIONAL_PHY
 	tristate "National Semiconductor PHYs"

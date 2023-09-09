@@ -276,3 +276,4 @@ u64 ion_get_total_heap_bytes(void)
 {
 	return atomic_long_read(&total_heap_bytes);
 }
+EXPORT_SYMBOL_GPL(ion_get_total_heap_bytes);

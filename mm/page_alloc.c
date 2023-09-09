@@ -69,6 +69,9 @@
 #include <linux/nmi.h>
 #include <linux/psi.h>
 #include <linux/khugepaged.h>
+#ifdef CONFIG_ION
+#include <linux/ion.h>
+#endif
 
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
@@ -2431,8 +2434,10 @@ static void steal_suitable_fallback(struct zone *zone, struct page *page,
 	 * likelihood of future fallbacks. Wake kswapd now as the node
 	 * may be balanced overall and kswapd will not wake naturally.
 	 */
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
 	if (boost_watermark(zone) && (alloc_flags & ALLOC_KSWAPD))
 		set_bit(ZONE_BOOSTED_WATERMARK, &zone->flags);
+#endif
 
 	/* We are not allowed to try stealing from the whole block */
 	if (!whole_block)
@@ -5505,6 +5510,10 @@ void show_free_areas(unsigned int filter, nodemask_t *nodemask)
 			printk(KERN_CONT " %ld", zone->lowmem_reserve[i]);
 		printk(KERN_CONT "\n");
 	}
+
+#ifdef CONFIG_ION
+	printk("ion used:%llukB\n", div_u64(ion_get_total_heap_bytes(), 1024));
+#endif
 
 	for_each_populated_zone(zone) {
 		unsigned int order;

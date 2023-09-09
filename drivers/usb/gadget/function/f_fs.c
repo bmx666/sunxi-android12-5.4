@@ -124,6 +124,7 @@ struct ffs_ep {
 	u8				num;
 
 	int				status;	/* P: epfile->mutex */
+	void				*context;
 };
 
 struct ffs_epfile {
@@ -246,6 +247,7 @@ ffs_sb_create_file(struct super_block *sb, const char *name, void *data,
 
 DEFINE_MUTEX(ffs_lock);
 EXPORT_SYMBOL_GPL(ffs_lock);
+DECLARE_COMPLETION(io_finished);
 
 static struct ffs_dev *_ffs_find_dev(const char *name);
 static struct ffs_dev *_ffs_alloc_dev(void);
@@ -709,8 +711,27 @@ static void ffs_epfile_io_complete(struct usb_ep *_ep, struct usb_request *req)
 	if (likely(req->context)) {
 		struct ffs_ep *ep = _ep->driver_data;
 		ep->status = req->status ? req->status : req->actual;
+		ep->context = &io_finished;
 		complete(req->context);
 	}
+}
+
+static void ffs_epfile_io_wait(struct ffs_function *func)
+{
+	struct ffs_data *ffs = func->ffs;
+	struct ffs_ep *ep = func->eps;
+	unsigned int count = ffs->eps_count;
+
+	ENTER();
+	if (&ffs->epfiles->mutex == NULL)
+		return;
+	mutex_trylock(&ffs->epfiles->mutex);
+	while (count--) {
+		if (ep->status < 0 && likely(ep->context))
+			wait_for_completion_io(ep->context);
+		++ep;
+	}
+	mutex_unlock(&ffs->epfiles->mutex);
 }
 
 static ssize_t ffs_copy_to_iter(void *data, int data_len, struct iov_iter *iter)
@@ -1089,13 +1110,17 @@ static ssize_t ffs_epfile_io(struct file *file, struct ffs_io_data *io_data)
 			interrupted = ep->status < 0;
 		}
 
-		if (interrupted)
+		if (interrupted) {
 			ret = -EINTR;
-		else if (io_data->read && ep->status > 0)
+		} else if (io_data->read && ep->status > 0) {
 			ret = __ffs_epfile_read_data(epfile, data, ep->status,
 						     &io_data->data);
-		else
+		} else {
 			ret = ep->status;
+			if (ep->status < 0 && likely(ep->context))
+				complete(ep->context);
+		}
+
 		goto error_mutex;
 	} else if (!(req = usb_ep_alloc_request(ep->ep, GFP_ATOMIC))) {
 		ret = -ENOMEM;
@@ -3584,6 +3609,8 @@ static void ffs_func_unbind(struct usb_configuration *c,
 		ffs_func_eps_disable(func);
 		ffs->func = NULL;
 	}
+
+	ffs_epfile_io_wait(func);
 
 	if (!--opts->refcnt)
 		functionfs_unbind(ffs);

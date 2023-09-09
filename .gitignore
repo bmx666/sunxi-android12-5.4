@@ -146,3 +146,7 @@ x509.genkey
 
 # Clang's compilation database file
 /compile_commands.json
+
+# Allwinner
+!rootfs.cpio.gz
+arch/arm64/boot/dts/sunxi/board.dts
